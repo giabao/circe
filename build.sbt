@@ -25,11 +25,11 @@ val compilerOptions = Seq(
 val catsVersion = "2.1.1"
 val jawnVersion = "1.0.0"
 val shapelessVersion = "2.3.3"
-val refinedVersion = "0.9.14"
+val refinedVersion = "0.9.15"
 
 val paradiseVersion = "2.1.1"
 
-val scalaTestVersion = "3.1.2"
+val scalaTestVersion = "3.2.0"
 val scalaCheckVersion = "1.14.3"
 val disciplineVersion = "1.0.2"
 val disciplineScalaTestVersion = "1.0.1"
@@ -196,6 +196,7 @@ lazy val circeCrossModules = Seq[(Project, Project)](
   (numbersTesting, numbersTestingJS),
   (numbers, numbersJS),
   (core, coreJS),
+  (extras, extrasJS),
   (generic, genericJS),
   (shapes, shapesJS),
   (literal, literalJS),
@@ -377,7 +378,7 @@ lazy val literalBase = circeCrossModule("literal", mima = previousCirceVersion, 
       "com.chuusai" %%% "shapeless" % shapelessVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
       "org.scalatest" %%% "scalatest" % scalaTestVersion % Test,
-      "org.scalatestplus" %%% "scalacheck-1-14" % "3.1.2.0" % Test
+      "org.scalatestplus" %%% "scalacheck-1-14" % "3.2.0.0" % Test
     )
   )
   .jsSettings(
@@ -428,7 +429,7 @@ lazy val scalajsJavaTimeTest = circeModule("scalajs-java-time-test", mima = None
 
 lazy val scodecBase = circeCrossModule("scodec", mima = previousCirceVersion)
   .settings(
-    libraryDependencies += ("org.scodec" %%% "scodec-bits" % "1.1.14").withDottyCompat(scalaVersion.value),
+    libraryDependencies += ("org.scodec" %%% "scodec-bits" % "1.1.17").withDottyCompat(scalaVersion.value),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.AllLibraryJars
   )
   .jsSettings(
@@ -524,6 +525,11 @@ lazy val jawn = circeModule("jawn", mima = previousCirceVersion)
     addDisciplineScalaTest(true)
   )
   .dependsOn(core)
+
+lazy val extrasBase = circeCrossModule("extras", mima = previousCirceVersion).dependsOn(coreBase, testsBase % Test)
+
+lazy val extras = extrasBase.jvm
+lazy val extrasJS = extrasBase.js
 
 lazy val benchmark = circeModule("benchmark", mima = None)
   .settings(noPublishSettings)
