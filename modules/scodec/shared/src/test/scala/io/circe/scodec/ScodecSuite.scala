@@ -35,8 +35,9 @@ class ScodecSuite extends CirceSuite {
   // this test shows that decoder is to some extend liberal
   // even though such input could not have been produced by BitVector encoder it's getting decoded to BitVector
   "Codec[ByteVector]" should "return empty BitVector in case contains only non-zero header" in {
-    assert(decode("""{"bits": "mA==", "length": 8}""")(decodeBitVector) === Right(bin"10011000"))
-    assert(decode("""{"bits": "mA==", "length": 16}""")(decodeBitVector) === Right(bin"10011000"))
+    val bits = BitVector.fromValidBin("10011000")
+    assert(decode("""{"bits": "mA==", "length": 8}""")(decodeBitVector) === Right(bits))
+    assert(decode("""{"bits": "mA==", "length": 16}""")(decodeBitVector) === Right(bits))
     assert(decode("""{"bits": "mA==", "length": 0}""")(decodeBitVector) === Right(BitVector.empty))
   }
 }
