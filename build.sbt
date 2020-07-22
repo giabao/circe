@@ -49,6 +49,7 @@ val previousCirceVersion = Some("0.12.3")
 val scalaFiddleCirceVersion = "0.9.1"
 
 lazy val baseSettings = Seq(
+  scalaVersion := System.getProperty("scalaVersion", scalaVersion.value),
   scalacOptions ++= {
     if (priorTo2_13(scalaVersion.value)) compilerOptions
     else
