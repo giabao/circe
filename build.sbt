@@ -118,6 +118,28 @@ def addDisciplineScalaTest(testScope: Boolean = true) = libraryDependencies += {
   if (testScope) dep % Test else dep
 }
 
+val libTransSetting = libraryDependencies := {
+  val old = libraryDependencies.value
+  val sv = scalaVersion.value
+  CrossVersion.partialVersion(sv) match {
+    case Some((0, n)) if n > 24 =>
+      def eql(a: ModuleID, b: ModuleID) = a.organization == b.organization && a.name == b.name
+      old.map {
+        case m if Seq(
+            "org.scalatestplus",
+            "org.scalatest",
+            "dev.travisbrown"
+          ).contains(m.organization) => m.withOrganization("com.sandinh")
+        case m if Seq(
+            "org.scalacheck" % "scalacheck" % "*",
+            "com.chuusai" %%% "shapeless" % "*",
+          ).exists(eql(m, _)) => m.withDottyCompat(sv)
+        case m => m.excludeAll("org.scalatest", "org.scalatestplus")
+      }
+    case _ => old
+  }
+}
+
 /**
  * We omit all Scala.js projects from Unidoc generation.
  */
@@ -268,6 +290,7 @@ lazy val numbersTestingBase = circeCrossModule("numbers-testing", mima = previou
   libraryDependencies += ("org.scalacheck" %%% "scalacheck" % scalaCheckVersion).withDottyCompat(scalaVersion.value),
   coverageExcludedPackages := "io\\.circe\\.numbers\\.testing\\..*"
 )
+  .settings(libTransSetting)
 
 lazy val numbersTesting = numbersTestingBase.jvm
 lazy val numbersTestingJS = numbersTestingBase.js
@@ -276,6 +299,7 @@ lazy val numbersBase = circeCrossModule("numbers", mima = previousCirceVersion)
   .settings(addDisciplineScalaTest(true))
   .settings(scalacOptions in Test += "-language:implicitConversions")
   .dependsOn(numbersTestingBase % Test)
+  .settings(libTransSetting)
 
 lazy val numbers = numbersBase.jvm
 lazy val numbersJS = numbersBase.js
@@ -296,6 +320,7 @@ lazy val coreBase = circeCrossModule("core", mima = previousCirceVersion)
     }
   )
   .dependsOn(numbersBase)
+  .settings(libTransSetting)
 
 lazy val core = coreBase.jvm
 lazy val coreJS = coreBase.js
@@ -333,6 +358,7 @@ lazy val genericBase = circeCrossModule("generic", mima = previousCirceVersion)
     )
   )
   .dependsOn(coreBase, testsBase % Test)
+  .settings(libTransSetting)
 
 lazy val generic = genericBase.jvm
 lazy val genericJS = genericBase.js
@@ -413,6 +439,7 @@ lazy val parserBase = circeCrossModule("parser", mima = previousCirceVersion)
   .jvmConfigure(_.dependsOn(jawn))
   .jsConfigure(_.dependsOn(scalajs))
   .dependsOn(coreBase)
+  .settings(libTransSetting)
 
 lazy val parser = parserBase.jvm
 lazy val parserJS = parserBase.js
@@ -437,6 +464,7 @@ lazy val scodecBase = circeCrossModule("scodec", mima = previousCirceVersion)
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % scalaJavaTimeVersion % Test
   )
   .dependsOn(coreBase, testsBase % Test)
+  .settings(libTransSetting)
 
 lazy val scodec = scodecBase.jvm
 lazy val scodecJS = scodecBase.js
@@ -457,6 +485,7 @@ lazy val testingBase = circeCrossModule("testing", mima = previousCirceVersion)
     coverageExcludedPackages := "io\\.circe\\.testing\\..*"
   )
   .dependsOn(coreBase, numbersTestingBase)
+  .settings(libTransSetting)
 
 lazy val testing = testingBase.jvm
 lazy val testingJS = testingBase.js
@@ -506,6 +535,7 @@ lazy val testsBase = circeCrossModule("tests", mima = None)
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % scalaJavaTimeVersion % Test
   )
   .dependsOn(coreBase, parserBase, testingBase)
+  .settings(libTransSetting)
 
 lazy val tests = testsBase.jvm
 lazy val testsJS = testsBase.js
@@ -526,8 +556,10 @@ lazy val jawn = circeModule("jawn", mima = previousCirceVersion)
     addDisciplineScalaTest(true)
   )
   .dependsOn(core)
+  .settings(libTransSetting)
 
 lazy val extrasBase = circeCrossModule("extras", mima = previousCirceVersion).dependsOn(coreBase, testsBase % Test)
+  .settings(libTransSetting)
 
 lazy val extras = extrasBase.jvm
 lazy val extrasJS = extrasBase.js
@@ -554,6 +586,7 @@ lazy val benchmarkDotty = circeModule("benchmark-dotty", mima = None)
   )
   .enablePlugins(JmhPlugin)
   .dependsOn(core, jawn)
+  .settings(libTransSetting)
 
 lazy val publishSettings = Seq(
   releaseCrossBuild := true,
