@@ -637,3 +637,22 @@ addCommandAlias(
   ";buildJS" + jsProjects.map(";" + _.id + "/test").mkString + formatCommands
 )
 addCommandAlias("validate", ";validateJVM;validateJS")
+
+lazy val dottyProjects: Seq[Project] = Seq(
+  numbersTesting, numbers, core, generic, parser,
+  scodec, testing, tests, jawn, extras, benchmarkDotty
+)
+
+def dottyAlias(cmd: String) = addCommandAlias(
+  "dotty" + cmd.split(':').map(s => s.head.toUpper.toString + s.tail).mkString,
+  dottyProjects.map(";" + _.id + s"/$cmd").mkString
+)
+
+// Add aliases: dottyCompile, dottyTestCompile,..
+Seq(
+  "compile",
+  "test:compile",
+  "test",
+  "publishLocal",
+  "publishSigned",
+).flatMap(dottyAlias)
